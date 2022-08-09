@@ -5,7 +5,10 @@ import (
 	"reflect"
 	"testing"
 
+	"go.step.sm/crypto/pemutil"
 	"go.step.sm/crypto/sshutil"
+
+	"github.com/smallstep/assert"
 )
 
 func TestCustomSSHTemplateOptions(t *testing.T) {
@@ -16,6 +19,11 @@ func TestCustomSSHTemplateOptions(t *testing.T) {
 	}
 	crCertificate := `{"Key":null,"Type":"user","KeyID":"foo@smallstep.com","Principals":["foo"]}`
 	data := sshutil.CreateTemplateData(sshutil.HostCert, "smallstep.com", []string{"smallstep.com"})
+
+	x5cCerts, err := pemutil.ReadCertificateBundle("./testdata/certs/x5c-leaf.crt")
+	assert.FatalError(t, err)
+	data.SetAuthorizationCertificate(x5cCerts)
+
 	type args struct {
 		o               *Options
 		data            sshutil.TemplateData
@@ -60,6 +68,21 @@ func TestCustomSSHTemplateOptions(t *testing.T) {
 	"type": "host",
 	"keyId": "smallstep.com",
 	"principals": ["smallstep.com"],
+	"extensions": null,
+	"criticalOptions": null
+}`),
+		}, false},
+		{"okCustomTemplatePicksCertData", args{&Options{SSH: &SSHOptions{Template: `{
+	"type": {{ toJson .Type }},
+	"keyId": {{ toJson .KeyID }},
+	"principals": "{{ toJson .AuthorizationCrtKey.DNSNames }}",
+	"extensions": {{ toJson .Extensions }},
+	"criticalOptions": {{ toJson .CriticalOptions }}
+}`}}, data, sshutil.DefaultTemplate, SignSSHOptions{}}, sshutil.Options{
+			CertBuffer: bytes.NewBufferString(`{
+	"type": "host",
+	"keyId": "smallstep.com",
+	"principals": ["leaf-test"],
 	"extensions": null,
 	"criticalOptions": null
 }`),

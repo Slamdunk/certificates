@@ -212,7 +212,7 @@ func (p *X5C) AuthorizeSign(ctx context.Context, token string) ([]SignOption, er
 	}
 
 	// The X509 certificate will be available using the template variable
-	// AuthorizationCrt. For example {{ .AuthorizationCrt.DNSNames }} can be
+	// AuthorizationCrtKey. For example {{ .AuthorizationCrtKey.DNSNames }} can be
 	// used to get all the domains.
 	data.SetAuthorizationCertificate(claims.chains[0][0])
 
@@ -301,7 +301,7 @@ func (p *X5C) AuthorizeSSHSign(ctx context.Context, token string) ([]SignOption,
 	}
 
 	// The X509 certificate will be available using the template variable
-	// AuthorizationCrt. For example {{ .AuthorizationCrt.DNSNames }} can be
+	// AuthorizationCrtKey. For example {{ .AuthorizationCrtKey.DNSNames }} can be
 	// used to get all the domains.
 	data.SetAuthorizationCertificate(claims.chains[0][0])
 
